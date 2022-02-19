@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wassalni/routes.dart';
+import 'package:wassalni/views/screens/auth/signin_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      routes: routes,
+      home: const SigninScreen(),
     );
   }
 }
