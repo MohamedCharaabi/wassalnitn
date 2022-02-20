@@ -4,12 +4,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wassalni/modelView/providers/around_me_provider.dart';
 import 'package:wassalni/modelView/providers/user_provider.dart';
 import 'package:wassalni/modelView/services/authentication_service.dart';
 import 'package:wassalni/modelView/services/firebase_crud.dart';
 import 'package:wassalni/modelView/user_crud.dart';
 import 'package:wassalni/models/user_model.dart';
 import 'package:wassalni/routes.dart';
+import 'package:wassalni/views/screens/auth/signin_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +28,8 @@ void main() async {
     providers: [
       ChangeNotifierProvider<UserProvider>(
           create: (_) => UserProvider(userInfo)),
+      ChangeNotifierProvider<AroundMeProvider>(
+          create: (_) => AroundMeProvider()),
     ],
     child: MyApp(
       userIsAuthenticated: _authenticatedUser != null && true,

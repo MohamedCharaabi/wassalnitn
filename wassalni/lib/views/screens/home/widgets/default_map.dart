@@ -7,6 +7,7 @@ import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
+import 'package:wassalni/modelView/providers/around_me_provider.dart';
 import 'package:wassalni/modelView/providers/user_provider.dart';
 import 'package:wassalni/models/user_model.dart';
 import 'package:location/location.dart' as loc;
@@ -16,21 +17,21 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 class DefaultMap extends StatefulWidget {
-  const DefaultMap({Key? key, this.minSize = true, this.arroundMe = false})
+  const DefaultMap({Key? key, this.minSize = true, this.listen = false})
       : super(key: key);
 
   final bool minSize;
-  final bool arroundMe;
+  final bool listen;
   @override
   _DefaultMapState createState() => _DefaultMapState();
 }
 
 class _DefaultMapState extends State<DefaultMap> {
   // Activate Arround Me
-  bool _arroundMe = false;
+  late bool _listen;
   final loc.Location location = loc.Location();
 
-  Completer<GoogleMapController> _googleMapController = Completer();
+  final Completer<GoogleMapController> _googleMapController = Completer();
   LatLng _center = LatLng(36.3998135, 10.0325908);
 
   void _onMapCreated(GoogleMapController controller) {
@@ -46,17 +47,13 @@ class _DefaultMapState extends State<DefaultMap> {
   late Geoflutterfire geo;
   late List<UserModel> users;
 
-  _getAroundMe() async {
+  _getAroundMe({bool listen = false}) async {
     log('Geting around me..');
 
-    // var position = await location.getLocation();
-    // double? lat = position.latitude;
-    // double? lng = position.longitude;
-
-    // log('current Lat: $lat');
-
-    // stream = _firestore.collection('users').get();
+    // if (listen) {
     stream = _firestore.collection('users').snapshots();
+
+    log('listenning...');
     stream
         .map((event) => event.docs.map((doc) => doc.data()).toList())
         .listen((data) => {
@@ -66,16 +63,21 @@ class _DefaultMapState extends State<DefaultMap> {
                   List<UserModel>.from(data.map((e) => UserModel.fromJson(e))),
               // }),
               // log('${users.length}'),
+
               _updateMakers(users),
             });
+    // }
   }
 
   @override
   void initState() {
-    _arroundMe = widget.arroundMe;
     super.initState();
+    setState(() {
+      _listen = widget.listen;
+    });
     getMyLocation();
-    _getAroundMe();
+    log('$_listen');
+    if (_listen) _getAroundMe(listen: _listen);
   }
 
   void getMyLocation() async {
@@ -87,6 +89,8 @@ class _DefaultMapState extends State<DefaultMap> {
 
   @override
   Widget build(BuildContext context) {
+    // log('${widget.listen}');
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       height: widget.minSize
@@ -123,11 +127,16 @@ class _DefaultMapState extends State<DefaultMap> {
       String? _currentUserId =
           Provider.of<UserProvider>(context, listen: false).currentUser?.uid;
 
-      if (geoPoint != null && element.uid != _currentUserId) {
+      if (geoPoint != null &&
+          element.uid != _currentUserId &&
+          element.position!
+                  .distance(lat: _center.latitude, lng: _center.longitude) >
+              .2 &&
+          element.isDriver == true) {
         _addMarker(
             id: element.uid!,
             title: element.name!,
-            snippet: 'bla bla bla',
+            snippet: element.phone ?? '',
             position: geoPoint.geoPoint,
             isCurrentUser: element.uid == _currentUserId);
       }
@@ -161,7 +170,7 @@ class _DefaultMapState extends State<DefaultMap> {
       bool isCurrentUser = false}) async {
     final Uint8List customMarker = await getBytesFromAsset(
         path: 'assets/images/car.png', //paste the custom image path
-        width: 50 // size of custom image as marker
+        width: 100 // size of custom image as marker
         );
     var marker = Marker(
         markerId: MarkerId(id),

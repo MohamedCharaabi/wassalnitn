@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:wassalni/modelView/auth_base.dart';
 import 'package:wassalni/modelView/services/firebase_crud.dart';
@@ -129,10 +130,21 @@ class AuthenticationService extends AuthBase {
         final UserModel? _connecteUserInfo =
             await _firebaseCrud.getUserInfo(_user.user!.uid);
 
+        Fluttertoast.showToast(
+          msg: 'Welcome ${_connecteUserInfo?.name}',
+          toastLength: Toast.LENGTH_SHORT,
+        );
+
         return _connecteUserInfo;
       }
     } catch (e) {
       print(e.toString());
+
+      Fluttertoast.showToast(
+          msg: e
+              .toString()
+              .replaceAll('Exception: ', '')
+              .replaceAll('(PlatformException) ', ''));
       return null;
     }
   }
@@ -155,15 +167,18 @@ class AuthenticationService extends AuthBase {
         return 'sucess';
       }
 
-      // await _firebaseCrud.createUser(UserModel(
-      //   name: username,
-      //   email: email,
-      //   password: password,
-      // ).toJson());
-
+      Fluttertoast.showToast(
+        msg: 'Welcome ${username}',
+        toastLength: Toast.LENGTH_SHORT,
+      );
       return 'success';
     } catch (e) {
       print(e.toString());
+      Fluttertoast.showToast(
+          msg: e
+              .toString()
+              .replaceAll('Exception: ', '')
+              .replaceAll('(PlatformException) ', ''));
       return e.toString();
     }
   }

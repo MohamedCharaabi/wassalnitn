@@ -8,11 +8,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:provider/provider.dart';
+import 'package:wassalni/modelView/providers/around_me_provider.dart';
 import 'package:wassalni/modelView/providers/user_provider.dart';
 import 'package:wassalni/modelView/services/authentication_service.dart';
 import 'package:wassalni/modelView/services/firebase_crud.dart';
 import 'package:wassalni/modelView/services/permission.dart';
 import 'package:wassalni/models/user_model.dart';
+import 'package:wassalni/utils/constants.dart';
+import 'package:wassalni/utils/responsive.dart';
+import 'package:wassalni/views/screens/home/widgets/custom_drawer.dart';
 import 'package:wassalni/views/screens/home/widgets/default_map.dart';
 import 'package:location/location.dart' as loc;
 
@@ -94,6 +98,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // // Get all users within a radius of 50 km
   }
 
+  bool _listenToNearbyRiders = true;
+
   changeLocation() async {
     final loc.LocationData newLocation = await location.getLocation();
     final GeoFirePoint newPoint = geo.point(
@@ -119,9 +125,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     String? currentUserId =
         Provider.of<UserProvider>(context, listen: false).currentUser?.uid;
-
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 8, 6, 0),
+      backgroundColor: background,
+      drawer: CustomDrawer(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15.0),
         child: Stack(
@@ -131,34 +137,35 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Row(
-                    children: [
-                      MaterialButton(
-                          color: Colors.white,
-                          onPressed: () => _listenToLocation(),
-                          child: Text('Start Listening')),
-                      MaterialButton(
-                          color: Colors.white,
-                          onPressed: () async {
-                            _authenticationService.signOut();
-                            context.read<UserProvider>().logout();
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                                '/signin', (Route<dynamic> route) => false);
-                          },
-                          child: Text('Logout')),
-                    ],
-                  ),
-                  MaterialButton(
-                      onPressed: () => _stopListening(),
-                      child: Text('Stop Listening')),
                   Expanded(
                     child: Container(
-                      color: Colors.red,
+                      color: Colors.transparent,
                     ),
                   ),
-                  const Text(
-                    "lorem epsium",
-                    style: TextStyle(color: Colors.white),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Around Me",
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                      ),
+                      // Switch(
+                      //     activeColor: mainColor,
+                      //     inactiveThumbColor: Colors.white,
+                      //     inactiveTrackColor: Colors.grey,
+                      //     value: _listenToNearbyRiders,
+                      //     onChanged: (value) {
+                      //       value ? _UpdateLocation() : _stopListening();
+                      //       context.read<AroundMeProvider>().setAroundMe(value);
+                      //       setState(() {
+                      //         _listenToNearbyRiders = value;
+                      //       });
+                      //     }),
+                    ],
                   ),
                 ],
               ),
@@ -169,6 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   DefaultMap(
                     minSize: minSize,
+                    listen: _listenToNearbyRiders,
                   ),
                   Positioned(
                     top: minSize ? 10 : 20,
@@ -200,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _listenToLocation() async {
+  void _UpdateLocation() async {
     _locationSubscription = location.onLocationChanged.handleError((error) {
       log(error);
       _locationSubscription?.cancel();
@@ -218,11 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
         GeoFirePoint newPoint =
             GeoFirePoint(locationData.latitude!, locationData.longitude!);
         log('points:  $_oldPoint, $newPoint');
-        if (_oldPoint != newPoint && _oldPoint != null
-            // _oldPoint!
-            //         .distance(lat: newPoint.latitude, lng: newPoint.longitude) >
-            //     0.0002
-            ) {
+        if (_oldPoint != newPoint && _oldPoint != null) {
           await FirebaseCrud().updateLocation(newPoint, _currentUserId);
           setState(() {
             _oldPoint = newPoint;
