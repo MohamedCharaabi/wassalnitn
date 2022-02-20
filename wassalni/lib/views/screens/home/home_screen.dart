@@ -153,18 +153,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontWeight: FontWeight.bold,
                             color: Colors.white),
                       ),
-                      // Switch(
-                      //     activeColor: mainColor,
-                      //     inactiveThumbColor: Colors.white,
-                      //     inactiveTrackColor: Colors.grey,
-                      //     value: _listenToNearbyRiders,
-                      //     onChanged: (value) {
-                      //       value ? _UpdateLocation() : _stopListening();
-                      //       context.read<AroundMeProvider>().setAroundMe(value);
-                      //       setState(() {
-                      //         _listenToNearbyRiders = value;
-                      //       });
-                      //     }),
+                      Switch(
+                          activeColor: mainColor,
+                          inactiveThumbColor: Colors.white,
+                          inactiveTrackColor: Colors.grey,
+                          value: _listenToNearbyRiders,
+                          onChanged: (value) {
+                            value ? _UpdateLocation() : _stopListening();
+                            // context.read<AroundMeProvider>().setAroundMe(value);
+                            setState(() {
+                              _listenToNearbyRiders = value;
+                            });
+                          }),
                     ],
                   ),
                 ],
@@ -226,7 +226,9 @@ class _HomeScreenState extends State<HomeScreen> {
         GeoFirePoint newPoint =
             GeoFirePoint(locationData.latitude!, locationData.longitude!);
         log('points:  $_oldPoint, $newPoint');
-        if (_oldPoint != newPoint && _oldPoint != null) {
+        if (_oldPoint != newPoint
+            // && _oldPoint != null
+            ) {
           await FirebaseCrud().updateLocation(newPoint, _currentUserId);
           setState(() {
             _oldPoint = newPoint;

@@ -58,7 +58,7 @@ class _DefaultMapState extends State<DefaultMap> {
         .map((event) => event.docs.map((doc) => doc.data()).toList())
         .listen((data) => {
               // setState(() {
-              debugPrint('data: $data'),
+              // debugPrint('data: $data'),
               users =
                   List<UserModel>.from(data.map((e) => UserModel.fromJson(e))),
               // }),
@@ -126,12 +126,12 @@ class _DefaultMapState extends State<DefaultMap> {
       GeoFirePoint? geoPoint = element.position;
       String? _currentUserId =
           Provider.of<UserProvider>(context, listen: false).currentUser?.uid;
-
+      log('$element');
       if (geoPoint != null &&
           element.uid != _currentUserId &&
-          element.position!
-                  .distance(lat: _center.latitude, lng: _center.longitude) >
-              .2 &&
+          // element.position!
+          //         .distance(lat: _center.latitude, lng: _center.longitude) >
+          //     .2 &&
           element.isDriver == true) {
         _addMarker(
             id: element.uid!,
