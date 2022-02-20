@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   Positioned(
                     top: minSize ? 10 : 20,
-                    right: 15,
+                    left: 15,
                     child: Container(
                       decoration: const BoxDecoration(
                         color: Colors.purple,
