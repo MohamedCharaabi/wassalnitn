@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:wassalni/modelView/services/authentication_service.dart';
 import 'package:wassalni/utils/resusable_widget.dart';
 import 'package:wassalni/views/screens/auth/signup_screen.dart';
-import 'package:wassalni/views/screens/home/home_screen.dart';
+// import 'package:wassalni/views/screens/home/home_screen.dart';
 
 class SigninScreen extends StatefulWidget {
   SigninScreen({Key? key}) : super(key: key);
@@ -61,6 +61,7 @@ class _SigninScreenState extends State<SigninScreen> {
                 final result = await AuthenticationService().emailPassSignIn(
                   _emailTextController.text,
                   _passwordTextController.text,
+                  context,
                 );
                 // Navigator.pushNamed(context, '/signup');
                 // String? result = await AuthenticationService().googleSignIn();

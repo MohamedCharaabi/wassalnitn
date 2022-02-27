@@ -50,7 +50,7 @@ class CustomDrawer extends StatelessWidget {
               title: const Text("Logout"),
               onTap: () async {
                 log('outing ...');
-                await _authenticationService.signOut();
+                await _authenticationService.signOut(context);
                 context.read<UserProvider>().logout();
                 Navigator.of(context).pushNamedAndRemoveUntil(
                     '/signin', (Route<dynamic> route) => false);

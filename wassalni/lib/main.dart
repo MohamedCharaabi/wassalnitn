@@ -8,10 +8,8 @@ import 'package:wassalni/modelView/providers/around_me_provider.dart';
 import 'package:wassalni/modelView/providers/user_provider.dart';
 import 'package:wassalni/modelView/services/authentication_service.dart';
 import 'package:wassalni/modelView/services/firebase_crud.dart';
-import 'package:wassalni/modelView/user_crud.dart';
 import 'package:wassalni/models/user_model.dart';
 import 'package:wassalni/routes.dart';
-import 'package:wassalni/views/screens/auth/signin_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,15 +30,15 @@ void main() async {
           create: (_) => AroundMeProvider()),
     ],
     child: MyApp(
-      userIsAuthenticated: _authenticatedUser != null && true,
+      userIsAuthenticated: userInfo == null ? null : userInfo.isDriver,
     ),
   ));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key, this.userIsAuthenticated = false}) : super(key: key);
+  const MyApp({Key? key, this.userIsAuthenticated}) : super(key: key);
 
-  final bool userIsAuthenticated;
+  final bool? userIsAuthenticated;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -49,13 +47,18 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
+    log('${widget.userIsAuthenticated}');
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: widget.userIsAuthenticated ? '/home' : '/signin',
+      initialRoute: widget.userIsAuthenticated == false
+          ? '/home'
+          : widget.userIsAuthenticated == true
+              ? '/driver_'
+              : '/signin',
       routes: routes,
     );
   }

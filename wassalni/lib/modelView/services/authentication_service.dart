@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
 import 'package:wassalni/modelView/auth_base.dart';
+import 'package:wassalni/modelView/providers/user_provider.dart';
 import 'package:wassalni/modelView/services/firebase_crud.dart';
-import 'package:wassalni/modelView/user_crud.dart';
 import 'package:wassalni/models/user_model.dart';
 
 class AuthenticationService extends AuthBase {
@@ -101,9 +102,11 @@ class AuthenticationService extends AuthBase {
   }
 
   @override
-  Future<void> signOut() async {
+  Future<void> signOut(BuildContext context) async {
     try {
       await _firebaseAuth.signOut();
+      // update provider
+      Provider.of<UserProvider>(context, listen: false).changeUser = null;
     } catch (e) {
       print(e.toString());
     }
@@ -120,7 +123,8 @@ class AuthenticationService extends AuthBase {
   }
 
   @override
-  Future<UserModel?> emailPassSignIn(String email, String password) async {
+  Future<UserModel?> emailPassSignIn(
+      String email, String password, BuildContext context) async {
     try {
       final UserCredential? _user = await _firebaseAuth
           .signInWithEmailAndPassword(email: email, password: password);
@@ -130,6 +134,10 @@ class AuthenticationService extends AuthBase {
         final UserModel? _connecteUserInfo =
             await _firebaseCrud.getUserInfo(_user.user!.uid);
 
+// update provider
+        Provider.of<UserProvider>(context, listen: false).changeUser =
+            _connecteUserInfo;
+
         Fluttertoast.showToast(
           msg: 'Welcome ${_connecteUserInfo?.name}',
           toastLength: Toast.LENGTH_SHORT,
@@ -138,7 +146,7 @@ class AuthenticationService extends AuthBase {
         return _connecteUserInfo;
       }
     } catch (e) {
-      print(e.toString());
+      // print(e.toString());
 
       Fluttertoast.showToast(
           msg: e
@@ -150,22 +158,27 @@ class AuthenticationService extends AuthBase {
   }
 
   @override
-  Future<String> emailPassSignUp(
-      String username, String email, String password) async {
+  Future<String> emailPassSignUp(String username, String email, String password,
+      BuildContext context) async {
     try {
-      UserCredential credential = await _firebaseAuth
+      UserCredential? credential = await _firebaseAuth
           .createUserWithEmailAndPassword(email: email, password: password);
-      if (credential != null) {
-        final UserModel newUser = UserModel(
-          name: username,
-          email: email,
-          image: '',
-          isDriver: true,
-          uid: credential.user!.uid,
-        );
-        await _usersCollection.doc(credential.user!.uid).set(newUser.toJson());
-        return 'sucess';
-      }
+
+      final UserModel newUser = UserModel(
+        name: username,
+        email: email,
+        image: '',
+        isDriver: true,
+        uid: credential.user!.uid,
+      );
+      await _usersCollection.doc(credential.user!.uid).set(newUser.toJson());
+
+      // get User info
+      final UserModel? _connecteUserInfo =
+          await _firebaseCrud.getUserInfo(credential.user!.uid);
+      // update provider
+      Provider.of<UserProvider>(context, listen: false).changeUser =
+          _connecteUserInfo;
 
       Fluttertoast.showToast(
         msg: 'Welcome ${username}',

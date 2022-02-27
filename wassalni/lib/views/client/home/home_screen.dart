@@ -1,8 +1,9 @@
 // ignore_for_file: unused_field
 
 import 'dart:async';
-import 'dart:developer';
+import 'dart:developer'; /*  */
 import 'dart:ffi';
+import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -16,8 +17,8 @@ import 'package:wassalni/modelView/services/permission.dart';
 import 'package:wassalni/models/user_model.dart';
 import 'package:wassalni/utils/constants.dart';
 import 'package:wassalni/utils/responsive.dart';
-import 'package:wassalni/views/screens/home/widgets/custom_drawer.dart';
-import 'package:wassalni/views/screens/home/widgets/default_map.dart';
+import 'package:wassalni/views/client/home/widgets/custom_drawer.dart';
+import 'package:wassalni/views/client/home/widgets/default_map.dart';
 import 'package:location/location.dart' as loc;
 
 class HomeScreen extends StatefulWidget {
@@ -98,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // // Get all users within a radius of 50 km
   }
 
-  bool _listenToNearbyRiders = true;
+  bool _listenToNearbyRiders = false;
 
   changeLocation() async {
     final loc.LocationData newLocation = await location.getLocation();
@@ -114,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    locationPermissionHandler();
+    // locationPermissionHandler();
     location.changeSettings(interval: 300, accuracy: loc.LocationAccuracy.high);
     location.enableBackgroundMode(enable: true);
     // changeLocation();
@@ -125,11 +126,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     String? currentUserId =
         Provider.of<UserProvider>(context, listen: false).currentUser?.uid;
+
+    Responsive _responsive = Responsive(context);
     return Scaffold(
       backgroundColor: background,
+      appBar: AppBar(
+        backgroundColor: mainColor,
+        leading: const Icon(Icons.menu),
+        elevation: 0,
+      ),
       drawer: CustomDrawer(),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+        padding: const EdgeInsets.symmetric(),
         child: Stack(
           children: [
             SizedBox(
@@ -140,6 +148,78 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Container(
                       color: Colors.transparent,
+                      child: Column(
+                        children: [
+                          // heading
+                          Container(
+                            color: mainColor,
+                            height: _responsive.getHeight(0.2),
+                            width: _responsive.width,
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 15.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: const <Widget>[
+                                Text("Welcome to Wasalni",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.bold)),
+                                Text(
+                                    "Happy to have you access your trips in just a tap.",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ))
+                              ],
+                            ),
+                          ),
+                          //  2 buttons (ride, intercity)
+                          const SizedBox(height: 15),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              RideButton(
+                                  responsive: _responsive,
+                                  text: 'Ride',
+                                  goTo: 'request_ride'),
+                              RideButton(
+                                  responsive: _responsive,
+                                  text: 'Intercity',
+                                  goTo: 'request_ride')
+                            ],
+                          ),
+                          // Row(
+                          //   children: [
+                          //     const Text("Rider",
+                          //         style: TextStyle(
+                          //             color: Colors.white70,
+                          //             fontWeight: FontWeight.bold,
+                          //             fontSize: 19.0)),
+                          //     SizedBox(
+                          //       child: Image.asset(
+                          //         'assets/images/car.png',
+                          //         height: 20,
+                          //         width: 20,
+                          //       ), // Your image widget here
+                          //     ),
+                          //     const Text("Driver",
+                          //         style: TextStyle(
+                          //             color: Colors.white70,
+                          //             fontWeight: FontWeight.bold,
+                          //             fontSize: 19.0)),
+                          //     SizedBox(
+                          //       child: Image.asset(
+                          //         'assets/images/car.png',
+                          //         height: 20,
+                          //         width: 20,
+                          //       ), // Your image widget here
+                          //     ),
+                          //   ],
+                          // )
+                        ],
+                      ),
                     ),
                   ),
                   Row(
@@ -222,21 +302,22 @@ class _HomeScreenState extends State<HomeScreen> {
       if (locationData.latitude != null &&
           locationData.longitude != null &&
           _currentUserId != null) {
-        // log('Updating location...');
-        GeoFirePoint newPoint =
-            GeoFirePoint(locationData.latitude!, locationData.longitude!);
-        log('points:  $_oldPoint, $newPoint');
-        if (_oldPoint != newPoint
-            // && _oldPoint != null
-            ) {
-          await FirebaseCrud().updateLocation(newPoint, _currentUserId);
-          setState(() {
-            _oldPoint = newPoint;
-          });
+// check if user moving
+        GeoFirePoint newPoint = geo.point(
+            latitude: locationData.latitude!,
+            longitude: locationData.longitude!);
+
+        if (_oldPoint != newPoint && _oldPoint != null) {
+          double distance = _oldPoint!
+              .distance(lat: newPoint.latitude, lng: newPoint.longitude);
+          if (distance >= 0.003) {
+            await FirebaseCrud().updateLocation(newPoint, _currentUserId);
+          }
         }
+        setState(() {
+          _oldPoint = newPoint;
+        });
       }
-      // store new location
-      log('${locationData.latitude}, ${locationData.longitude}');
     });
   }
 
@@ -245,5 +326,60 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _locationSubscription = null;
     });
+  }
+}
+
+class RideButton extends StatelessWidget {
+  RideButton(
+      {Key? key,
+      required Responsive responsive,
+      required this.text,
+      required this.goTo})
+      : _responsive = responsive,
+        super(key: key);
+
+  final Responsive _responsive;
+  final String text;
+  // VoidCallback onPressed;
+  final String goTo;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, goTo),
+      child: Container(
+          height: _responsive.getHeight(0.15),
+          // width: _responsive.getWidth(0.3),
+          padding: const EdgeInsets.symmetric(horizontal: 5),
+          decoration: BoxDecoration(
+            color: mainColor,
+            borderRadius: BorderRadius.circular(10),
+            gradient: LinearGradient(
+              colors: [mainColor, mainColor.withOpacity(0.1)],
+              stops: const [0.1, 0.9],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: Row(
+            children: <Widget>[
+              Transform.rotate(
+                angle: math.pi / 4,
+                child: Image.asset(
+                  'assets/images/car.png',
+                  height: 40,
+                  width: 40,
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Text(
+                text,
+                style: TextStyle(fontSize: 20, color: white),
+              )
+            ],
+          )),
+    );
   }
 }

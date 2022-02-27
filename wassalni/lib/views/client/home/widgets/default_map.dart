@@ -44,40 +44,64 @@ class _DefaultMapState extends State<DefaultMap> {
   final _firestore = FirebaseFirestore.instance;
 
   late Stream stream;
-  late Geoflutterfire geo;
+  Geoflutterfire geo = Geoflutterfire();
   late List<UserModel> users;
 
-  _getAroundMe({bool listen = false}) async {
-    log('Geting around me..');
+  _getAroundMe() async {
+    if (widget.listen) {
+      stream = _firestore
+          .collection('users')
+          // get arround me users
+          .where('position',
+              isGreaterThan: geo.point(
+                  latitude: _center.latitude - 0.1,
+                  longitude: _center.longitude - 0.1))
+          .where('position',
+              isLessThan: geo.point(
+                  latitude: _center.latitude + 0.1,
+                  longitude: _center.longitude + 0.1))
+          .snapshots();
+      stream
+          .map((event) => event.docs.map((doc) => doc.data()).toList())
+          .listen(
+              (data) => {
+                    // setState(() {
+                    // debugPrint('data: $data'),
+                    users = List<UserModel>.from(
+                        data.map((e) => UserModel.fromJson(e))),
+                    // }),
+                    // log('${users.length}'),
 
-    // if (listen) {
-    stream = _firestore.collection('users').snapshots();
-
-    log('listenning...');
-    stream
-        .map((event) => event.docs.map((doc) => doc.data()).toList())
-        .listen((data) => {
-              // setState(() {
-              // debugPrint('data: $data'),
-              users =
-                  List<UserModel>.from(data.map((e) => UserModel.fromJson(e))),
-              // }),
-              // log('${users.length}'),
-
-              _updateMakers(users),
-            });
-    // }
+                    _updateMakers(users),
+                  },
+              onError: (e) => log('error: $e'),
+              onDone: () => log('done'),
+              cancelOnError: false);
+    } else {
+      _removeAllMarkers();
+    }
   }
 
   @override
   void initState() {
     super.initState();
+    // geo = Geoflutterfire();
     setState(() {
       _listen = widget.listen;
     });
     getMyLocation();
-    log('$_listen');
-    if (_listen) _getAroundMe(listen: _listen);
+    _getAroundMe();
+  }
+
+  @override
+  void didUpdateWidget(oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.listen != widget.listen) {
+      setState(() {
+        _listen = widget.listen;
+      });
+      _getAroundMe();
+    }
   }
 
   void getMyLocation() async {
@@ -183,6 +207,18 @@ class _DefaultMapState extends State<DefaultMap> {
 
     setState(() {
       _markers.add(marker);
+    });
+  }
+
+  _removeMarker(MarkerId markerId) async {
+    setState(() {
+      _markers.removeWhere((m) => m.markerId == markerId);
+    });
+  }
+
+  _removeAllMarkers() async {
+    setState(() {
+      _markers.clear();
     });
   }
 }
