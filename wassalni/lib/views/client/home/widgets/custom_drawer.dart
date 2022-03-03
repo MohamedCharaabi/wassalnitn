@@ -22,10 +22,10 @@ class CustomDrawer extends StatelessWidget {
       height: _responsive.height,
       width: _responsive.getWidth(0.8),
       padding: const EdgeInsets.all(15.0),
-      color: Colors.transparent,
+      // color: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
-          color: mainColor,
+          color: background,
           borderRadius: BorderRadius.circular(15.0),
           gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -35,8 +35,8 @@ class CustomDrawer extends StatelessWidget {
                 0.9
               ],
               colors: [
-                mainColor.withOpacity(0.8),
-                mainColor,
+                background.withOpacity(0.8),
+                background,
               ]),
         ),
         child: Column(

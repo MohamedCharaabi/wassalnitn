@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:wassalni/modelView/providers/around_me_provider.dart';
 import 'package:wassalni/modelView/providers/user_provider.dart';
@@ -48,18 +49,33 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     log('${widget.userIsAuthenticated}');
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      initialRoute: widget.userIsAuthenticated == false
-          ? '/home'
-          : widget.userIsAuthenticated == true
-              ? '/driver_'
-              : '/signin',
-      routes: routes,
-    );
+    return ScreenUtilInit(
+        designSize: Size(360, 690),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: () {
+          return MaterialApp(
+            builder: (context, widget) {
+              //add this line
+              ScreenUtil.setContext(context);
+              return MediaQuery(
+                //Setting font does not change with system font size
+                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                child: widget!,
+              );
+            },
+            debugShowCheckedModeBanner: false,
+            title: 'Flutter Demo',
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+            ),
+            initialRoute: widget.userIsAuthenticated == false
+                ? '/home'
+                : widget.userIsAuthenticated == true
+                    ? '/driver_'
+                    : '/signin',
+            routes: routes,
+          );
+        });
   }
 }
