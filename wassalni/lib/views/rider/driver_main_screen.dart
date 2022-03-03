@@ -1,7 +1,7 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:wassalni/utils/constants.dart';
-import 'package:wassalni/views/rider/pages/chat_page.dart';
+import 'package:wassalni/views/screens/messages/chat_page.dart';
 import 'package:wassalni/views/rider/pages/home_page.dart';
 import 'package:wassalni/views/rider/pages/notification_page.dart';
 import 'package:wassalni/views/rider/pages/settings_page.dart';
