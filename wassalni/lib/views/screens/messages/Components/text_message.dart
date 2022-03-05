@@ -19,7 +19,9 @@ class TextMessage extends StatelessWidget {
       ),
       child: Text(
         message.text,
-        style: TextStyle(color: message.isSender ? Colors.white : Color.fromARGB(255, 0, 0, 0)),
+        style: TextStyle(
+            color:
+                message.isSender ? Colors.white : Color.fromARGB(255, 0, 0, 0)),
       ),
     );
   }

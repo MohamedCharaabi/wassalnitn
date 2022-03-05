@@ -10,25 +10,25 @@ class Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: kDefaultPadding, vertical: kDefaultPadding),
-            child: ListView.builder(
-              itemCount: demeChatMessages.length,
-              itemBuilder: (context, index) => Message(
-                message: demeChatMessages[index],
+    return Container(
+      color: background,
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: kDefaultPadding, vertical: kDefaultPadding),
+              child: ListView.builder(
+                itemCount: demeChatMessages.length,
+                itemBuilder: (context, index) => Message(
+                  message: demeChatMessages[index],
+                ),
               ),
             ),
           ),
-        ),
-        ChatInputField(),
-      ],
+          ChatInputField(),
+        ],
+      ),
     );
   }
 }
-
-
-

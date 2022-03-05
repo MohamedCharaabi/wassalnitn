@@ -15,7 +15,7 @@ class ChatInputField extends StatelessWidget {
         vertical: kDefaultPadding,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: mainColor,
         boxShadow: [
           BoxShadow(
             offset: Offset(0, 4),
@@ -26,7 +26,7 @@ class ChatInputField extends StatelessWidget {
       ),
       child: SafeArea(
         child: Row(children: [
-          Icon(Icons.mic, color: kPrimaryColor),
+          Icon(Icons.mic, color: white),
           SizedBox(
             width: kDefaultPadding,
           ),
@@ -34,30 +34,32 @@ class ChatInputField extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: kDefaultPadding * 0.75),
               decoration: BoxDecoration(
-                color: kPrimaryColor.withOpacity(0.05),
+                color: white.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(40),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.sentiment_satisfied_alt_outlined,
-                    color: kPrimaryColor.withOpacity(0.64),
+                    color: white.withOpacity(0.64),
                   ),
                   SizedBox(width: kDefaultPadding / 4),
                   Expanded(
                     child: TextField(
                       decoration: InputDecoration(
-                          hintText: "Type a message", border: InputBorder.none),
+                        hintText: "Type a message",
+                        border: InputBorder.none,
+                      ),
                     ),
                   ),
                   Icon(
                     Icons.attach_file,
-                    color: kPrimaryColor.withOpacity(0.64),
+                    color: white.withOpacity(0.64),
                   ),
                   SizedBox(width: kDefaultPadding / 4),
                   Icon(
                     Icons.camera_alt_outlined,
-                    color: kPrimaryColor.withOpacity(0.64),
+                    color: white.withOpacity(0.64),
                   ),
                 ],
               ),
