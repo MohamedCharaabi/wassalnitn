@@ -52,24 +52,22 @@ class _DefaultMapState extends State<DefaultMap> {
       stream = _firestore
           .collection('users')
           // get arround me users
-          .where('position',
-              isGreaterThan: geo.point(
-                  latitude: _center.latitude - 0.1,
-                  longitude: _center.longitude - 0.1))
-          .where('position',
-              isLessThan: geo.point(
-                  latitude: _center.latitude + 0.1,
-                  longitude: _center.longitude + 0.1))
+          // .where('position',
+          //     isGreaterThan: geo.point(
+          //         latitude: _center.latitude - 0.1,
+          //         longitude: _center.longitude - 0.1))
+          // .where('position',
+          //     isLessThan: geo.point(
+          //         latitude: _center.latitude + 0.1,
+          //         longitude: _center.longitude + 0.1))
           .snapshots();
       stream
           .map((event) => event.docs.map((doc) => doc.data()).toList())
           .listen(
               (data) => {
-                    // setState(() {
-                    // debugPrint('data: $data'),
+                    debugPrint('data: $data'),
                     users = List<UserModel>.from(
                         data.map((e) => UserModel.fromJson(e))),
-                    // }),
                     // log('${users.length}'),
 
                     _updateMakers(users),

@@ -12,7 +12,7 @@ final routes = {
   '/reset_pass': (context) => const ResetPasswordScreen(),
   // client
   '/home': (context) => const HomeScreen(),
-  'request_ride': (context) => const RequestRideScreen(),
+  'request_ride': (context) => const RideStartScreen(),
 
   // driver
   '/driver_': (context) => const DriverMainScreen(),

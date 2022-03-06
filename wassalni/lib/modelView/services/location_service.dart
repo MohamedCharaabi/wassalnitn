@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:wassalni/models/place.dart';
+import 'package:location/location.dart' as loc;
 
 class LocationService {
-  Future<List?> getAdress(String term) async {
+  final loc.Location _location = loc.Location();
+  Future<List<Place>?> getAdress(String term) async {
     try {
       http.Response _response = await http.get(
           Uri.parse(
@@ -13,7 +19,12 @@ class LocationService {
           });
 
       if (_response.statusCode == 200) {
-        //  return json.decode(_response.body)['results'];
+        var data = json.decode(_response.body);
+        List<Place> places = [];
+        for (var item in data['addresses']) {
+          places.add(Place.fromJson(item));
+        }
+        return places;
       } else {
         throw Exception('Failed to load post');
       }
@@ -21,5 +32,12 @@ class LocationService {
       Fluttertoast.showToast(msg: '$e');
       return null;
     }
+  }
+
+  Future<LatLng> getMyLocation() async {
+    var currentLocation = await _location.getLocation();
+    LatLng latLng =
+        LatLng(currentLocation.latitude!, currentLocation.longitude!);
+    return latLng;
   }
 }

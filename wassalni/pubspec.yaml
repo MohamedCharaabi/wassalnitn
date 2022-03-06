@@ -45,6 +45,7 @@ dependencies:
   fluttertoast: ^8.0.8
   geolocator: ^8.2.0
   google_maps_flutter: ^2.1.1
+  flutter_polyline_points: ^1.0.0
   auto_size_text: ^3.0.0
   freezed_annotation: ^1.1.0
   permission_handler: ^9.1.0
@@ -54,12 +55,14 @@ dependencies:
   flutter_radar: ^3.1.1
   flutter_screenutil: ^5.3.1
   http: ^0.13.4
+  flutter_svg: ^1.0.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   freezed: ^1.1.1
   build_runner: ^2.1.7
+  json_serializable: ^6.1.4
   
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

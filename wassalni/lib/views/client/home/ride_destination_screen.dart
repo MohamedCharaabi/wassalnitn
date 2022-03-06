@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wassalni/main.dart';
@@ -10,61 +10,90 @@ import 'package:wassalni/modelView/services/location_service.dart';
 import 'package:wassalni/models/place.dart';
 import 'package:wassalni/utils/constants.dart';
 import 'package:wassalni/utils/responsive.dart';
-import 'package:location/location.dart' as Loc;
+// import 'package:location/location.dart' as loc;
 import 'package:wassalni/utils/styles.dart';
-import 'package:wassalni/views/client/home/ride_destination_screen.dart';
+import 'package:wassalni/views/client/home/select_rider_screen.dart';
 
-class RideStartScreen extends StatefulWidget {
-  const RideStartScreen({Key? key}) : super(key: key);
+class RideDestinationScreen extends StatefulWidget {
+  const RideDestinationScreen({Key? key, required startPoint})
+      : _startPoint = startPoint,
+        super(key: key);
+
+  final Marker _startPoint;
 
   @override
-  _RideStartScreenState createState() => _RideStartScreenState();
+  State<RideDestinationScreen> createState() => _RideDestinationScreenState();
 }
 
-class _RideStartScreenState extends State<RideStartScreen> {
+class _RideDestinationScreenState extends State<RideDestinationScreen> {
+// map
   final Completer<GoogleMapController> _controller = Completer();
 
+//search
   bool _openSearch = false;
   String _searchAddress = '';
 
-  bool _selectingStartPosition = true;
-  GeoFirePoint? _startPoint;
-  GeoFirePoint? _endPoint;
+  GeoFirePoint? _destinationPoint;
 // markers
   Set<Marker> _markers = {};
   setLocation(LatLng position) {
     setState(() {
-      _startPoint = GeoFirePoint(position.latitude, position.longitude);
-      if (_markers.isNotEmpty) {
-        // empty the markers
-        _markers.clear();
-        _markers.add(Marker(
-            markerId: const MarkerId('start'),
-            position: position,
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueViolet)));
-      } else {
-        _markers.add(Marker(
-            markerId: const MarkerId('start'),
-            position: position,
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueViolet)));
-      }
+      _destinationPoint = GeoFirePoint(position.latitude, position.longitude);
+      _markers.add(Marker(
+          markerId: const MarkerId('destination'),
+          position: position,
+          icon:
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed)));
     });
+    // create route
+    _createPolylines(_markers.first.position, position);
   }
+// polylines for drawing route
 
-  LocationService _locationService = LocationService();
+  late PolylinePoints _polylinePoints;
+  // List of coordinates to join
+  List<LatLng> polylineCoordinates = [];
+// Map storing polylines created by connecting two points
+  Map<PolylineId, Polyline> polylines = {};
+
+//
+  final LocationService _locationService = LocationService();
   List<Place>? _searchPlaces = [];
   bool _searchLoading = false;
   Place? _selectedAdress;
+
+  @override
+  void initState() {
+    super.initState();
+    _markers.add(widget._startPoint);
+  }
+
+  @override
+  void didUpdateWidget(covariant RideDestinationScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // log('${widget._startPoint.position.latitude}');
+    if (widget._startPoint != oldWidget._startPoint) _markers.clear();
+    _markers.add(widget._startPoint);
+  }
+
+  _createPolylines(
+    LatLng start,
+    LatLng destination,
+  ) async {
+    // Initializing PolylinePoints
+    _polylinePoints = PolylinePoints();
+  }
+
   @override
   Widget build(BuildContext context) {
     Responsive _responsive = Responsive(context);
+    // log(' new point: ${widget._startPoint.position.latitude}');
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: mainColor,
-        title: const Text("Start Location"),
         centerTitle: true,
+        title: const Text('Destination Location'),
       ),
       body: FutureBuilder<LatLng>(
           future: _locationService.getMyLocation(),
@@ -74,11 +103,13 @@ class _RideStartScreenState extends State<RideStartScreen> {
                 child: CircularProgressIndicator(),
               );
             }
+
             return Stack(
               children: <Widget>[
                 // map
                 GoogleMap(
                     markers: _markers,
+                    polylines: Set<Polyline>.of(polylines.values),
                     myLocationEnabled: true,
                     compassEnabled: true,
                     zoomControlsEnabled: false,
@@ -262,23 +293,38 @@ class _RideStartScreenState extends State<RideStartScreen> {
                             // height: 0,
                             child: Column(
                               children: <Widget>[
+                                //  select position input
+
                                 // continue button
                                 InkWell(
                                   onTap: () {
-                                    log('${_markers.length}');
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                RideDestinationScreen(
-                                                    startPoint:
-                                                        _markers.first)));
+                                    debugPrint('${_markers.length}');
+                                    if (_markers.length >= 2) {
+                                      // GeoFirePoint _start = GeoFirePoint(
+                                      //     _markers.first.position.latitude,
+                                      //     _markers.first.position.longitude);
+                                      // GeoFirePoint _destination = GeoFirePoint(
+                                      //     _markers.last.position.latitude,
+                                      //     _markers.last.position.longitude);
+
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  SelectRiderScreen(
+                                                      startPoint:
+                                                          _markers.first,
+                                                      destinationPoint:
+                                                          _markers.last)));
+                                    }
                                   },
                                   child: Container(
                                     width: _responsive.getWidth(0.9),
                                     padding: const EdgeInsets.all(10.0),
                                     decoration: BoxDecoration(
-                                      color: background,
+                                      color: _markers.length >= 2
+                                          ? background
+                                          : background.withOpacity(.7),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     alignment: Alignment.centerRight,
