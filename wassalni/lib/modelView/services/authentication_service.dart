@@ -56,7 +56,7 @@ class AuthenticationService extends AuthBase {
           email: user.email,
           image: user.photoURL,
           uid: user.uid,
-          isDriver: true,
+          isDriver: false,
         );
         await FirebaseCrud().createUser(userModel.toJson());
       }

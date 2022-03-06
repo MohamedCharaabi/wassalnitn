@@ -9,7 +9,7 @@ class RideModel {
   GeoFirePoint? destination;
   Timestamp? time;
   double? price;
-  RideStatus? status;
+  RideStatus status;
 
   RideModel(
       {required this.user_id,
@@ -18,17 +18,27 @@ class RideModel {
       this.destination,
       this.price,
       this.time,
-      this.status});
+      this.status = RideStatus.REQUESTED});
 
-  factory RideModel.fromDocument(DocumentSnapshot doc) {
+  factory RideModel.fromDocument(Map<String, dynamic> map) {
+    final GeoPoint? start =
+        map['start'] != null ? map['start']['geopoint'] as GeoPoint : null;
+
+    final GeoPoint? destination = map['destination'] != null
+        ? map['destination']['geopoint'] as GeoPoint
+        : null;
+
     return RideModel(
-      user_id: doc['user_id'],
-      driver_id: doc['driver_id'],
-      start: doc['start'],
-      destination: doc['destination'] != null ? doc['destination'] : null,
-      price: doc['price'] != null ? doc['price'] : null,
-      time: doc['time'] != null ? doc['time'] : null,
-      status: doc['status'] != null ? doc['status'] : null,
+      user_id: map['user_id'],
+      driver_id: map['driver_id'],
+      start:
+          start != null ? GeoFirePoint(start.latitude, start.longitude) : null,
+      destination: destination != null
+          ? GeoFirePoint(destination.latitude, destination.longitude)
+          : null,
+      price: map['price'] != null ? map['price'] : null,
+      time: map['time'] != null ? map['time'] : null,
+      status: RideStatus.REQUESTED,
     );
   }
 
@@ -36,11 +46,11 @@ class RideModel {
     return {
       'user_id': user_id,
       'driver_id': driver_id,
-      'start': start,
-      'destination': destination,
+      'start': start!.data,
+      'destination': destination!.data,
       'price': price,
       'time': time,
-      'status': status,
+      'status': status.name,
     };
   }
 }

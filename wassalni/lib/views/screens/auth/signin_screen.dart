@@ -67,7 +67,9 @@ class _SigninScreenState extends State<SigninScreen> {
                 // String? result = await AuthenticationService().googleSignIn();
                 print(result);
                 if (result != null) {
-                  Navigator.pushNamed(context, '/home');
+                  result.isDriver!
+                      ? Navigator.pushNamed(context, '/driver_')
+                      : Navigator.pushNamed(context, '/home');
                 }
               }),
               singUpOption(),

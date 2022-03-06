@@ -13,6 +13,8 @@ import 'package:provider/provider.dart';
 import 'package:wassalni/main.dart';
 import 'package:wassalni/modelView/providers/user_provider.dart';
 import 'package:wassalni/modelView/services/location_service.dart';
+import 'package:wassalni/modelView/services/ride_crud.dart';
+import 'package:wassalni/models/ride_model.dart';
 import 'package:wassalni/models/user_model.dart';
 import 'package:wassalni/utils/bitmap_from_asset.dart';
 import 'package:wassalni/utils/constants.dart';
@@ -51,6 +53,10 @@ class _SelectRiderScreenState extends State<SelectRiderScreen> {
   UserModel? _selectedDriver;
   LatLng _center = LatLng(36.3998135, 10.0325908);
 
+//
+  bool _submitBtnLoading = false;
+  final RideCrud _rideCrud = RideCrud();
+// firebase
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late Stream stream;
   Geoflutterfire geo = Geoflutterfire();
@@ -124,9 +130,6 @@ class _SelectRiderScreenState extends State<SelectRiderScreen> {
             _selectedDriver = users.firstWhere((element) => element.uid == id);
           });
         },
-        // icon: BitmapDescriptor.defaultMarkerWithHue(isCurrentUser
-        //     ? BitmapDescriptor.hueGreen
-        //     : BitmapDescriptor.hueBlue),
         infoWindow: InfoWindow(title: title, snippet: snippet));
 
     setState(() {
@@ -152,13 +155,12 @@ class _SelectRiderScreenState extends State<SelectRiderScreen> {
       String? _currentUserId =
           Provider.of<UserProvider>(context, listen: false).currentUser?.uid;
       // log('$element');
-      if (geoPoint != null && element.uid != _currentUserId
-          //  &&
+      if (geoPoint != null &&
+          element.uid != _currentUserId &&
           // element.position!
           //         .distance(lat: _center.latitude, lng: _center.longitude) >
           //     .2 &&
-          // element.isDriver == true
-          ) {
+          element.isDriver == true) {
         _addMarker(
             id: element.uid!,
             title: element.name!,
@@ -195,6 +197,8 @@ class _SelectRiderScreenState extends State<SelectRiderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    String _userId = Provider.of<UserProvider>(context).currentUser!.uid!;
+
     Responsive _responsive = Responsive(context);
     return Scaffold(
       appBar: AppBar(
@@ -279,36 +283,68 @@ class _SelectRiderScreenState extends State<SelectRiderScreen> {
                           ),
 
                           // continue button
-                          Container(
-                            width: _responsive.getWidth(0.9),
-                            padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              color: background,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            alignment: Alignment.centerRight,
+                          InkWell(
+                            onTap: () async {
+                              if (_selectedDriver != null) {
+                                setState(() {
+                                  _submitBtnLoading = true;
+                                });
+                                final RideModel _ride = RideModel(
+                                  user_id: _userId,
+                                  driver_id: _selectedDriver!.uid!,
+                                  start: GeoFirePoint(
+                                      widget.startPoint.position.latitude,
+                                      widget.startPoint.position.longitude),
+                                  destination: GeoFirePoint(
+                                      widget.destinationPoint.position.latitude,
+                                      widget
+                                          .destinationPoint.position.longitude),
+                                );
+                                bool result = await _rideCrud.addRequest(_ride);
+                                setState(() {
+                                  _submitBtnLoading = false;
+                                });
+
+                                if (result) {
+                                  Navigator.of(context).pushNamedAndRemoveUntil(
+                                      '/home', (route) => false);
+                                }
+                              }
+                            },
                             child: Container(
-                              width: _responsive.getWidth(0.55),
-                              // alignment: Alignment.,
-                              child: Row(
-                                // mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: const <Widget>[
-                                  Text(
-                                    'Continue',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.arrow_forward,
-                                    color: Colors.white,
-                                  )
-                                ],
+                              width: _responsive.getWidth(0.9),
+                              padding: const EdgeInsets.all(10.0),
+                              decoration: BoxDecoration(
+                                color: _selectedDriver != null
+                                    ? background
+                                    : background.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(10),
                               ),
+                              alignment: Alignment.centerRight,
+                              child: _submitBtnLoading
+                                  ? const Center(
+                                      child: CircularProgressIndicator())
+                                  : SizedBox(
+                                      width: _responsive.getWidth(0.55),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: const <Widget>[
+                                          Text(
+                                            'Ask for a ride',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.arrow_forward,
+                                            color: Colors.white,
+                                          )
+                                        ],
+                                      ),
+                                    ),
                             ),
                           ),
                         ],

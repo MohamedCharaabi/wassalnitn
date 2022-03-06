@@ -10,7 +10,10 @@ import 'package:provider/provider.dart';
 class CustomDrawer extends StatelessWidget {
   CustomDrawer({
     Key? key,
+    required this.onTap,
   }) : super(key: key);
+
+  ValueChanged<int> onTap;
 
   final AuthenticationService _authenticationService = AuthenticationService();
 
@@ -40,8 +43,34 @@ class CustomDrawer extends StatelessWidget {
               ]),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            ListTile(
+              leading: const Icon(
+                Icons.home,
+                color: Colors.white,
+              ),
+              title: const Text("Home"),
+              onTap: () {
+                onTap(0);
+                // close drawer
+                Navigator.pop(context);
+              },
+              textColor: white,
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.chat,
+                color: Colors.white,
+              ),
+              title: const Text("Chat"),
+              onTap: () {
+                // close drawer
+                onTap(1);
+                Navigator.pop(context);
+              },
+              textColor: white,
+            ),
             ListTile(
               leading: const Icon(
                 Icons.logout,

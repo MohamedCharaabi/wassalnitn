@@ -4,10 +4,10 @@ import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:wassalni/models/ride_model.dart';
 
 class RideCrud {
-  final geo = Geoflutterfire();
+  // final geo = Geoflutterfire();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future addRequest(RideModel ride_model) async {
+  Future<bool> addRequest(RideModel ride_model) async {
     try {
       await _firestore
           .collection('rides')
@@ -15,6 +15,27 @@ class RideCrud {
           .set(ride_model.toJson());
 
       Fluttertoast.showToast(msg: "Request Sent");
+      return true;
+    } catch (e) {
+      // print(e.toString());
+      Fluttertoast.showToast(msg: "${e}");
+      return false;
+    }
+  }
+
+  Future<List<RideModel>?> getUserRides(String userId) async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('rides')
+          .where('user_id', isEqualTo: userId)
+          .get();
+
+      List<RideModel> ride_models = querySnapshot.docs
+          .map((doc) =>
+              RideModel.fromDocument(doc.data() as Map<String, dynamic>))
+          .toList();
+
+      return ride_models;
     } catch (e) {
       // print(e.toString());
       Fluttertoast.showToast(msg: "${e}");

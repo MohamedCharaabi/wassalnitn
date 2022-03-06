@@ -300,13 +300,6 @@ class _RideDestinationScreenState extends State<RideDestinationScreen> {
                                   onTap: () {
                                     debugPrint('${_markers.length}');
                                     if (_markers.length >= 2) {
-                                      // GeoFirePoint _start = GeoFirePoint(
-                                      //     _markers.first.position.latitude,
-                                      //     _markers.first.position.longitude);
-                                      // GeoFirePoint _destination = GeoFirePoint(
-                                      //     _markers.last.position.latitude,
-                                      //     _markers.last.position.longitude);
-
                                       Navigator.push(
                                           context,
                                           MaterialPageRoute(

@@ -14,6 +14,7 @@ import 'package:wassalni/modelView/providers/user_provider.dart';
 import 'package:wassalni/modelView/services/authentication_service.dart';
 import 'package:wassalni/modelView/services/firebase_crud.dart';
 import 'package:wassalni/modelView/services/permission.dart';
+import 'package:wassalni/models/Chat.dart';
 import 'package:wassalni/models/user_model.dart';
 import 'package:wassalni/utils/constants.dart';
 import 'package:wassalni/utils/responsive.dart';
@@ -22,6 +23,7 @@ import 'package:wassalni/views/client/home/widgets/custom_drawer.dart';
 import 'package:wassalni/views/client/home/widgets/default_map.dart';
 import 'package:location/location.dart' as loc;
 import 'package:wassalni/views/client/home/widgets/ride_button.dart';
+import 'package:wassalni/views/screens/messages/chat_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -125,6 +127,15 @@ class _HomeScreenState extends State<HomeScreen> {
     // _getAroundMe();
   }
 
+  int index = 0;
+  final List<Widget> _pages = const [SizedBox(), ChatPage()];
+
+  void _changePage(int index) {
+    setState(() {
+      this.index = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     String? currentUserId =
@@ -137,214 +148,227 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: mainColor,
         elevation: 0,
       ),
-      drawer: CustomDrawer(),
-      body: SizedBox(
-        child: Stack(
-          children: [
-            SizedBox(
-              height: _responsive.getHeight(.6),
-              /*  */
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // heading
-                  Expanded(
-                    child: Container(
-                      // height: _responsive.getHeight(0.2),
-                      width: _responsive.width,
-                      decoration: BoxDecoration(
-                        // color: mainColor,
-                        gradient: default_gradient(),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Text("Welcome to Wasalni",
-                              style: text_bold.copyWith(
-                                  fontSize: _responsive.isSmallScreen()
-                                      ? 18.sp
-                                      : 26.sp)),
-                          Text(
-                              "Happy to have you access your trips in just a tap.",
-                              style: text_bold.copyWith(fontSize: 16.sp))
-                        ],
-                      ),
-                    ),
-                  ),
-                  verticalSpace(5.0),
-
-                  //  2 buttons (ride, intercity)
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: _responsive.getResponsiveWidth(15.0)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        Flexible(
-                            child:
-                                RideButton(text: 'Ride', goTo: 'request_ride')),
-                        horizontalSpace(10),
-                        Flexible(
-                          child: RideButton(
-                              text: 'Intercity', goTo: 'request_ride'),
-                        )
-                      ],
-                    ),
-                  ),
-                  verticalSpace(5.0),
-
-                  //  where to search
-                  Container(
-                      padding: EdgeInsets.only(
-                        left: _responsive.getResponsiveWidth(15.0),
-                        top: _responsive.getResponsiveHeight(18.0),
-                        bottom: _responsive.getResponsiveHeight(18.0),
-                      ),
-                      margin: EdgeInsets.symmetric(
-                          horizontal: _responsive.getResponsiveWidth(15.0)),
-                      decoration: BoxDecoration(
-                        gradient: default_gradient(horizontal: true),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                            "Where To?",
-                            style: text_bold,
-                          ),
-                          Container(
-                              // padding: EdgeInsets.all(
-                              //     _responsive.getResponsiveWidth(5)),
-                              decoration: BoxDecoration(
-                                color: white,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.alarm,
-                                    color: mainColor,
-                                  ),
-                                  DropdownButton(
-                                      value: _selectedDropType,
-                                      iconDisabledColor: mainColor,
-                                      iconEnabledColor: mainColor,
-                                      underline:
-                                          const SizedBox(), // Hide the underline
-                                      hint: Text(_selectedDropType,
-                                          style: text_bold.copyWith(
-                                              color: background)),
-                                      items: const [
-                                        DropdownMenuItem(
-                                            child: Text('Now'), value: 'Now'),
-                                        DropdownMenuItem(
-                                            child: Text('Schedled'),
-                                            value: 'Schedled'),
-                                      ],
-                                      onChanged: (String? val) {
-                                        setState(() {
-                                          _selectedDropType = val ?? 'Now';
-                                        });
-                                      }),
-                                ],
-                              ))
-                        ],
-                      )),
-                  verticalSpace(10.0),
-
-                  // saved places
-                  Container(
-                      margin: EdgeInsets.symmetric(
-                          horizontal: _responsive.getResponsiveWidth(15.0)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Row(
-                            children: [
-                              DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: mainColor,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(Icons.star, color: background),
-                              ),
-                              horizontalSpace(5),
-                              Text("Choose a saved place", style: text_normal),
-                            ],
-                          ),
-                          Icon(Icons.chevron_right_rounded, color: white),
-                        ],
-                      )),
-
-                  // verticalSpace(5.0),
-                  // arround me
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: _responsive.getResponsiveWidth(15.0)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text("Around Me", style: text_bold),
-                        Switch(
-                            activeColor: mainColor,
-                            inactiveThumbColor: Colors.white,
-                            inactiveTrackColor: Colors.grey,
-                            value: _listenToNearbyRiders,
-                            onChanged: (value) {
-                              value ? _UpdateLocation() : _stopListening();
-                              // context.read<AroundMeProvider>().setAroundMe(value);
-                              setState(() {
-                                _listenToNearbyRiders = value;
-                              });
-                            }),
-                      ],
-                    ),
-                  ),
-                  verticalSpace(15.0),
-                ],
-              ),
-            ),
-            Align(
-              // height: _responsive.getHeight(.3),
-              alignment: Alignment.bottomCenter,
+      drawer: CustomDrawer(
+        onTap: (int x) => _changePage(x),
+      ),
+      body: index != 0
+          ? _pages[index]
+          : SizedBox(
               child: Stack(
                 children: [
-                  DefaultMap(
-                    minSize: minSize,
-                    listen: _listenToNearbyRiders,
+                  SizedBox(
+                    height: _responsive.getHeight(.6),
+                    /*  */
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // heading
+                        Expanded(
+                          child: Container(
+                            // height: _responsive.getHeight(0.2),
+                            width: _responsive.width,
+                            decoration: BoxDecoration(
+                              // color: mainColor,
+                              gradient: default_gradient(),
+                            ),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 15.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                Text("Welcome to Wasalni",
+                                    style: text_bold.copyWith(
+                                        fontSize: _responsive.isSmallScreen()
+                                            ? 18.sp
+                                            : 26.sp)),
+                                Text(
+                                    "Happy to have you access your trips in just a tap.",
+                                    style: text_bold.copyWith(fontSize: 16.sp))
+                              ],
+                            ),
+                          ),
+                        ),
+                        verticalSpace(5.0),
+
+                        //  2 buttons (ride, intercity)
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: _responsive.getResponsiveWidth(15.0)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Flexible(
+                                  child: RideButton(
+                                      text: 'Ride', goTo: 'request_ride')),
+                              horizontalSpace(10),
+                              Flexible(
+                                child: RideButton(
+                                    text: 'Intercity', goTo: 'request_ride'),
+                              )
+                            ],
+                          ),
+                        ),
+                        verticalSpace(5.0),
+
+                        //  where to search
+                        Container(
+                            padding: EdgeInsets.only(
+                              left: _responsive.getResponsiveWidth(15.0),
+                              top: _responsive.getResponsiveHeight(18.0),
+                              bottom: _responsive.getResponsiveHeight(18.0),
+                            ),
+                            margin: EdgeInsets.symmetric(
+                                horizontal:
+                                    _responsive.getResponsiveWidth(15.0)),
+                            decoration: BoxDecoration(
+                              gradient: default_gradient(horizontal: true),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Text(
+                                  "Where To?",
+                                  style: text_bold,
+                                ),
+                                Container(
+                                    // padding: EdgeInsets.all(
+                                    //     _responsive.getResponsiveWidth(5)),
+                                    decoration: BoxDecoration(
+                                      color: white,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Row(
+                                      children: <Widget>[
+                                        Icon(
+                                          Icons.alarm,
+                                          color: mainColor,
+                                        ),
+                                        DropdownButton(
+                                            value: _selectedDropType,
+                                            iconDisabledColor: mainColor,
+                                            iconEnabledColor: mainColor,
+                                            underline:
+                                                const SizedBox(), // Hide the underline
+                                            hint: Text(_selectedDropType,
+                                                style: text_bold.copyWith(
+                                                    color: background)),
+                                            items: const [
+                                              DropdownMenuItem(
+                                                  child: Text('Now'),
+                                                  value: 'Now'),
+                                              DropdownMenuItem(
+                                                  child: Text('Schedled'),
+                                                  value: 'Schedled'),
+                                            ],
+                                            onChanged: (String? val) {
+                                              setState(() {
+                                                _selectedDropType =
+                                                    val ?? 'Now';
+                                              });
+                                            }),
+                                      ],
+                                    ))
+                              ],
+                            )),
+                        verticalSpace(10.0),
+
+                        // saved places
+                        Container(
+                            margin: EdgeInsets.symmetric(
+                                horizontal:
+                                    _responsive.getResponsiveWidth(15.0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Row(
+                                  children: [
+                                    DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        color: mainColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child:
+                                          Icon(Icons.star, color: background),
+                                    ),
+                                    horizontalSpace(5),
+                                    Text("Choose a saved place",
+                                        style: text_normal),
+                                  ],
+                                ),
+                                Icon(Icons.chevron_right_rounded, color: white),
+                              ],
+                            )),
+
+                        // verticalSpace(5.0),
+                        // arround me
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: _responsive.getResponsiveWidth(15.0)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text("Around Me", style: text_bold),
+                              Switch(
+                                  activeColor: mainColor,
+                                  inactiveThumbColor: Colors.white,
+                                  inactiveTrackColor: Colors.grey,
+                                  value: _listenToNearbyRiders,
+                                  onChanged: (value) {
+                                    value
+                                        ? _UpdateLocation()
+                                        : _stopListening();
+                                    // context.read<AroundMeProvider>().setAroundMe(value);
+                                    setState(() {
+                                      _listenToNearbyRiders = value;
+                                    });
+                                  }),
+                            ],
+                          ),
+                        ),
+                        verticalSpace(15.0),
+                      ],
+                    ),
                   ),
-                  Positioned(
-                    top: minSize ? 10 : 20,
-                    left: 15,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.purple,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        color: Colors.white,
-                        onPressed: (() {
-                          setState(() {
-                            minSize = !minSize;
-                          });
-                        }),
-                        icon: minSize
-                            ? const Icon(Icons.fullscreen)
-                            : const Icon(Icons.fullscreen_exit),
-                      ),
+                  Align(
+                    // height: _responsive.getHeight(.3),
+                    alignment: Alignment.bottomCenter,
+                    child: Stack(
+                      children: [
+                        DefaultMap(
+                          minSize: minSize,
+                          listen: _listenToNearbyRiders,
+                        ),
+                        Positioned(
+                          top: minSize ? 10 : 20,
+                          left: 15,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.purple,
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              color: Colors.white,
+                              onPressed: (() {
+                                setState(() {
+                                  minSize = !minSize;
+                                });
+                              }),
+                              icon: minSize
+                                  ? const Icon(Icons.fullscreen)
+                                  : const Icon(Icons.fullscreen_exit),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 

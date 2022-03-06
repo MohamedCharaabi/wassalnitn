@@ -27,9 +27,9 @@ class _RideStartScreenState extends State<RideStartScreen> {
   bool _openSearch = false;
   String _searchAddress = '';
 
-  bool _selectingStartPosition = true;
+  // bool _selectingStartPosition = true;
   GeoFirePoint? _startPoint;
-  GeoFirePoint? _endPoint;
+  // GeoFirePoint? _endPoint;
 // markers
   Set<Marker> _markers = {};
   setLocation(LatLng position) {
@@ -278,11 +278,13 @@ class _RideStartScreenState extends State<RideStartScreen> {
                                     width: _responsive.getWidth(0.9),
                                     padding: const EdgeInsets.all(10.0),
                                     decoration: BoxDecoration(
-                                      color: background,
+                                      color: _startPoint != null
+                                          ? background
+                                          : background.withOpacity(.7),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     alignment: Alignment.centerRight,
-                                    child: Container(
+                                    child: SizedBox(
                                       width: _responsive.getWidth(0.55),
                                       // alignment: Alignment.,
                                       child: Row(

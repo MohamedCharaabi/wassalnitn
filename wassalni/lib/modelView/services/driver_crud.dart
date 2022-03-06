@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:wassalni/models/ride_model.dart';
@@ -13,9 +15,13 @@ class DriverCrud {
           .where('driver_id', isEqualTo: driverId)
           .get();
 
+      log(_myRides.docs.toString());
+
       List<RideModel> _rides = _myRides.docs.map((doc) {
-        return RideModel.fromDocument(doc);
+        return RideModel.fromDocument(doc.data() as Map<String, dynamic>);
       }).toList();
+
+      log('${_rides.length} rides found');
 
       return _rides;
     } catch (e) {
@@ -78,7 +84,7 @@ class DriverCrud {
           .get();
 
       return _rides.docs.map((doc) {
-        return RideModel.fromDocument(doc);
+        return RideModel.fromDocument(doc.data() as Map<String, dynamic>);
       }).toList();
     } on FirebaseException catch (e) {
       print(e);
@@ -95,7 +101,7 @@ class DriverCrud {
           .get();
 
       return _rides.docs.map((doc) {
-        return RideModel.fromDocument(doc);
+        return RideModel.fromDocument(doc.data() as Map<String, dynamic>);
       }).toList();
     } on FirebaseException catch (e) {
       print(e);

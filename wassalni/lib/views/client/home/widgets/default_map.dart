@@ -104,9 +104,11 @@ class _DefaultMapState extends State<DefaultMap> {
 
   void getMyLocation() async {
     LocationData myLoc = await location.getLocation();
-    setState(() {
-      _center = LatLng(myLoc.latitude!, myLoc.longitude!);
-    });
+    if (mounted) {
+      setState(() {
+        _center = LatLng(myLoc.latitude!, myLoc.longitude!);
+      });
+    }
   }
 
   @override
