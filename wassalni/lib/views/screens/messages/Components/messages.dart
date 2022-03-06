@@ -50,7 +50,7 @@ class MessageStatusDot extends StatelessWidget {
       height: 12,
       width: 12,
       decoration: BoxDecoration(
-        color: kPrimaryColor,
+        color: mainColor,
         shape: BoxShape.circle,
       ),
       child: Icon(

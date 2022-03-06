@@ -14,7 +14,7 @@ class TextMessage extends StatelessWidget {
       padding: EdgeInsets.symmetric(
           horizontal: kDefaultPadding * 0.75, vertical: kDefaultPadding / 2),
       decoration: BoxDecoration(
-        color: kPrimaryColor.withOpacity(message.isSender ? 1 : 0.8),
+        color: message.isSender ? Colors.grey : mainColor,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Text(
