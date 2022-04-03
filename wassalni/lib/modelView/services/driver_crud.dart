@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:wassalni/models/ride_model.dart';
+import 'package:wassalni/models/user_model.dart';
 
 class DriverCrud {
   final geo = Geoflutterfire();
@@ -106,6 +107,27 @@ class DriverCrud {
     } on FirebaseException catch (e) {
       print(e);
       return null;
+    }
+  }
+
+// search driver by name
+  Future<List<UserModel>> searchDriversClients(
+      {required String term, bool isDriver = true}) async {
+    try {
+      QuerySnapshot _drivers = await _firestore
+          .collection('users')
+          .where('isDriver', isEqualTo: isDriver)
+          .where('name', isGreaterThanOrEqualTo: term)
+          .get();
+
+      List<UserModel> data = _drivers.docs.map((doc) {
+        return UserModel.fromJson(doc.data() as Map<String, dynamic>);
+      }).toList();
+
+      return data;
+    } catch (e) {
+      log('Error: $e');
+      return [];
     }
   }
 }

@@ -9,10 +9,7 @@ class RideCrud {
 
   Future<bool> addRequest(RideModel ride_model) async {
     try {
-      await _firestore
-          .collection('rides')
-          .doc(ride_model.user_id)
-          .set(ride_model.toJson());
+      await _firestore.collection('rides').add(ride_model.toJson());
 
       Fluttertoast.showToast(msg: "Request Sent");
       return true;

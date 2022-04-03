@@ -31,7 +31,7 @@ void main() async {
           create: (_) => AroundMeProvider()),
     ],
     child: MyApp(
-      userIsAuthenticated: userInfo == null ? null : userInfo.isDriver,
+      userIsAuthenticated: userInfo?.isDriver,
     ),
   ));
 }
